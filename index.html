@@ -23,8 +23,6 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        
-        /* Cabeçalho com Logo */
         .header {
             display: flex;
             align-items: center;
@@ -44,7 +42,6 @@
             color: #1a365d;
             font-size: 22px;
         }
-
         .form-group {
             display: flex;
             gap: 10px;
@@ -99,8 +96,6 @@
             font-size: 11px;
         }
         .btn-delete:hover { background-color: #c53030; }
-        
-        /* Dashboard de Médias */
         .cards {
             display: flex;
             gap: 15px;
@@ -123,8 +118,6 @@
             font-size: 18px;
             color: #2d3748;
         }
-
-        /* Tabela */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -141,53 +134,16 @@
             color: #4a5568;
         }
 
-        /* Formatação Específica para Impressão */
         @media print {
-            body { 
-                background: white; 
-                margin: 0; 
-                padding: 0;
-            }
-            .container { 
-                box-shadow: none; 
-                width: 100%; 
-                max-width: none; 
-                padding: 0; 
-            }
-            .no-print { 
-                display: none !important; 
-            }
-            input { 
-                border: none; 
-                font-weight: bold; 
-                background: transparent; 
-                padding: 0;
-                font-size: 16px;
-                color: #000;
-            }
-            
-            .header {
-                border-bottom: 2px solid #ccc;
-            }
-            .header img {
-                display: block !important;
-                max-height: 80px;
-            }
-            
-            th, td {
-                border: 1px solid #000;
-                color: #000;
-            }
-            th {
-                background-color: #e2e8f0 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            .card {
-                border: 1px solid #000;
-                background-color: transparent !important;
-            }
+            body { background: white; margin: 0; padding: 0; }
+            .container { box-shadow: none; width: 100%; max-width: none; padding: 0; }
+            .no-print { display: none !important; }
+            input { border: none; font-weight: bold; background: transparent; padding: 0; font-size: 16px; color: #000; }
+            .header { border-bottom: 2px solid #ccc; }
+            .header img { display: block !important; max-height: 80px; }
+            th, td { border: 1px solid #000; color: #000; }
+            th { background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .card { border: 1px solid #000; background-color: transparent !important; }
             .card strong { color: #000 !important; }
         }
     </style>
@@ -195,13 +151,12 @@
 <body>
 
 <div class="container">
-    <!-- Cabeçalho com Logo Embutida -->
     <div class="header">
         <h2>Controle de Abastecimento</h2>
         <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAoHBwkHBgoJCAkLCwoMDxkQDw4ODx4WFxIZJCAmJSMgIyIoLTkwKCo2KyIjMkQyNjs9QEBAJjBGS0U+Sjk/QD3/2wBDAQsLCw8NDx0QEB09KSMpPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT3/wAARCADMAOUDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD2aiiigA0AAAABAAB3////2Q==" alt="Logo L-PROSP">
     </div>
 
-    <!-- Formulário de Entrada (Oculto na Impressão) -->
+    <!-- Formulário -->
     <div class="form-group no-print">
         <div class="input-field">
             <label for="data">Data</label>
@@ -226,7 +181,7 @@
         <button class="btn-add" onclick="adicionarRegistro()">Adicionar</button>
     </div>
 
-    <!-- Dashboard de Médias e Totais -->
+    <!-- Cards de Totais -->
     <div class="cards">
         <div class="card">
             <span>TOTAL LITROS</span>
@@ -242,7 +197,7 @@
         </div>
     </div>
 
-    <!-- Tabela de Registros -->
+    <!-- Tabela -->
     <table>
         <thead>
             <tr>
@@ -256,18 +211,44 @@
             </tr>
         </thead>
         <tbody id="tabela-corpo">
-            <!-- Linhas inseridas dinamicamente via JS -->
+            <!-- Dados do Firebase serão carregados aqui -->
         </tbody>
     </table>
 
-    <!-- Botão de Impressão -->
     <button class="btn-print no-print" onclick="window.print()">Imprimir / Gerar PDF</button>
 </div>
 
-<script>
-    let registros = [];
+<!-- Scripts do Firebase (SDK v10 Modulado) -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+        getFirestore, 
+        collection, 
+        addDoc, 
+        deleteDoc, 
+        doc, 
+        onSnapshot, 
+        query, 
+        orderBy 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    function adicionarRegistro() {
+    // 🔴 COLE SUAS CHAVES DO FIREBASE AQUI
+    const firebaseConfig = {
+        apiKey: "SUA_API_KEY",
+        authDomain: "SEU_PROJETO.firebaseapp.com",
+        projectId: "SEU_PROJETO",
+        storageBucket: "SEU_PROJETO.appspot.com",
+        messagingSenderId: "123456789",
+        appId: "1:123456789:web:abcdef"
+    };
+
+    // Inicialização do Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const abastecimentosRef = collection(db, "abastecimentos");
+
+    // Adiciona o registro no Firestore
+    window.adicionarRegistro = async function() {
         const dataInput = document.getElementById('data').value;
         const veiculo = document.getElementById('veiculo').value.trim().toUpperCase();
         const km = parseFloat(document.getElementById('km').value);
@@ -279,35 +260,52 @@
             return;
         }
 
-        // Formata a data para padrão PT-BR (DD/MM/AAAA)
         const partesData = dataInput.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
-
         const mediaKmL = km / litros;
 
-        const novoRegistro = {
-            id: Date.now(),
-            data: dataFormatada,
-            veiculo,
-            km,
-            litros,
-            valor,
-            mediaKmL
-        };
+        try {
+            await addDoc(abastecimentosRef, {
+                data: dataFormatada,
+                dataRaw: dataInput,
+                veiculo,
+                km,
+                litros,
+                valor,
+                mediaKmL,
+                criadoEm: new Date()
+            });
+            limparFormulario();
+        } catch (error) {
+            console.error("Erro ao salvar no Firebase:", error);
+            alert("Erro ao conectar com o banco de dados. Verifique a configuração do Firebase.");
+        }
+    };
 
-        registros.push(novoRegistro);
-        atualizarTabela();
-        atualizarCards();
-        limparFormulario();
-    }
+    // Remove um registro do Firestore
+    window.removerRegistro = async function(id) {
+        if (confirm("Tem certeza que deseja excluir este registro?")) {
+            try {
+                await deleteDoc(doc(db, "abastecimentos", id));
+            } catch (error) {
+                console.error("Erro ao excluir:", error);
+                alert("Não foi possível excluir o registro.");
+            }
+        }
+    };
 
-    function removerRegistro(id) {
-        registros = registros.filter(r => r.id !== id);
-        atualizarTabela();
-        atualizarCards();
-    }
+    // Escuta alterações em tempo real no banco
+    const q = query(abastecimentosRef, orderBy("criadoEm", "desc"));
+    onSnapshot(q, (snapshot) => {
+        const registros = [];
+        snapshot.forEach((doc) => {
+            registros.push({ id: doc.id, ...doc.data() });
+        });
+        atualizarTabela(registros);
+        atualizarCards(registros);
+    });
 
-    function atualizarTabela() {
+    function atualizarTabela(registros) {
         const tbody = document.getElementById('tabela-corpo');
         tbody.innerHTML = '';
 
@@ -321,14 +319,14 @@
                 <td>R$ ${r.valor.toFixed(2)}</td>
                 <td><strong>${r.mediaKmL.toFixed(2)}</strong></td>
                 <td class="no-print">
-                    <button class="btn-delete" onclick="removerRegistro(${r.id})">Excluir</button>
+                    <button class="btn-delete" onclick="removerRegistro('${r.id}')">Excluir</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    function atualizarCards() {
+    function atualizarCards(registros) {
         const totalLitros = registros.reduce((acc, r) => acc + r.litros, 0);
         const totalValor = registros.reduce((acc, r) => acc + r.valor, 0);
         const totalKm = registros.reduce((acc, r) => acc + r.km, 0);
