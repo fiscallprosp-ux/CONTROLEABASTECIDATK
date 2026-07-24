@@ -245,7 +245,7 @@
         </div>
     </div>
 
-    <!-- Formulário com Enter habilitado -->
+    <!-- Formulário (focado em Horímetro e Litros) -->
     <form class="form-group no-print" onsubmit="event.preventDefault(); adicionarRegistro();">
         <div class="input-field">
             <label for="carreta">Carreta / Placa</label>
@@ -263,10 +263,6 @@
             <label for="litros">Litros (L)</label>
             <input type="number" id="litros" placeholder="Ex: 80" step="0.01">
         </div>
-        <div class="input-field">
-            <label for="valor">Valor Total (R$)</label>
-            <input type="number" id="valor" placeholder="Ex: 450.00" step="0.01">
-        </div>
         <button type="submit" class="btn-add">Adicionar</button>
     </form>
 
@@ -275,10 +271,6 @@
         <div class="card">
             <span>TOTAL LITROS</span>
             <strong id="card-litros">0.00 L</strong>
-        </div>
-        <div class="card">
-            <span>TOTAL GASTO</span>
-            <strong id="card-valor">R$ 0.00</strong>
         </div>
         <div class="card">
             <span>CONSUMO MÉDIO (L/h)</span>
@@ -294,7 +286,6 @@
                 <th>Data</th>
                 <th>Horímetro (h)</th>
                 <th>Litros</th>
-                <th>Total (R$)</th>
                 <th>Consumo (L/h)</th>
                 <th class="no-print">Ações</th>
             </tr>
@@ -331,7 +322,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Array Local para Sessão Temporária (Limpa com F5)
+    // Array Local para Sessão Temporária (Limpa ao dar F5)
     let registrosSessao = [];
 
     window.fazerLogin = async function() {
@@ -376,9 +367,8 @@
         const dataInput = document.getElementById('data').value;
         const horimetro = parseFloat(document.getElementById('horimetro').value);
         const litros = parseFloat(document.getElementById('litros').value);
-        const valor = parseFloat(document.getElementById('valor').value);
 
-        if (!carreta || !dataInput || isNaN(horimetro) || isNaN(litros) || isNaN(valor) || horimetro <= 0) {
+        if (!carreta || !dataInput || isNaN(horimetro) || isNaN(litros) || horimetro <= 0) {
             alert('Por favor, preencha todos os campos corretamente.');
             return;
         }
@@ -390,8 +380,7 @@
             carreta,
             data: dataFormatada,
             horimetro,
-            litros,
-            valor
+            litros
         });
 
         recalcularEMostrar();
@@ -405,17 +394,15 @@
 
     function recalcularEMostrar() {
         let totalLitros = 0;
-        let totalValor = 0;
         let totalHoras = 0;
         let litrosParaMedia = 0;
 
         // Processa cálculo de consumo
         for (let i = 0; i < registrosSessao.length; i++) {
             totalLitros += registrosSessao[i].litros;
-            totalValor += registrosSessao[i].valor;
 
             if (i === 0) {
-                // O primeiro abastecimento da sessão serve como ponto de partida do horímetro
+                // O primeiro abastecimento da sessão serve como marcação inicial do horímetro
                 registrosSessao[i].consumoLh = null;
             } else {
                 let diffHoras = registrosSessao[i].horimetro - registrosSessao[i - 1].horimetro;
@@ -432,7 +419,6 @@
         // Atualiza Cards
         const mediaGeral = totalHoras > 0 ? (litrosParaMedia / totalHoras) : 0;
         document.getElementById('card-litros').innerText = `${totalLitros.toFixed(2)} L`;
-        document.getElementById('card-valor').innerText = `R$ ${totalValor.toFixed(2)}`;
         document.getElementById('card-media').innerText = `${mediaGeral.toFixed(2)} L/h`;
 
         // Renderiza Tabela na ordem exata de inserção
@@ -450,7 +436,6 @@
                 <td>${r.data}</td>
                 <td>${r.horimetro.toFixed(1)} h</td>
                 <td>${r.litros.toFixed(2)} L</td>
-                <td>R$ ${r.valor.toFixed(2)}</td>
                 <td>${mediaTxt}</td>
                 <td class="no-print">
                     <button class="btn-delete" type="button" onclick="removerRegistro(${index})">Excluir</button>
@@ -464,7 +449,6 @@
         document.getElementById('data').value = '';
         document.getElementById('horimetro').value = '';
         document.getElementById('litros').value = '';
-        document.getElementById('valor').value = '';
         document.getElementById('data').focus();
     }
 </script>
