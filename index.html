@@ -6,8 +6,8 @@
     <title>Controle de Abastecimento - L-PROSP</title>
     
     <!-- Favicon (Ícone da aba do navegador) -->
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="shortcut icon" type="image/png" href="logo.png">
+    <link rel="icon" type="image/jpeg" href="logo_2.jpg">
+    <link rel="shortcut icon" type="image/jpeg" href="logo_2.jpg">
 
     <style>
         body {
@@ -35,8 +35,11 @@
             margin-bottom: 20px;
         }
         .header img {
-            max-height: 70px;
+            max-height: 80px;
             width: auto;
+            /* Força a impressão das cores da imagem em alguns navegadores */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
         .header h2 {
             margin: 0;
@@ -67,6 +70,7 @@
             border: 1px solid #cbd5e0;
             border-radius: 4px;
             font-size: 14px;
+            text-transform: uppercase;
         }
         button {
             padding: 8px 16px;
@@ -106,6 +110,7 @@
             display: block;
             font-size: 12px;
             color: #718096;
+            margin-bottom: 5px;
         }
         .card strong {
             font-size: 20px;
@@ -120,7 +125,7 @@
         }
         th, td {
             border: 1px solid #e2e8f0;
-            padding: 8px;
+            padding: 10px 8px;
             text-align: left;
             font-size: 13px;
         }
@@ -129,12 +134,57 @@
             color: #4a5568;
         }
 
-        /* Formatação para Impressão */
+        /* Formatação Específica para Impressão */
         @media print {
-            body { background: white; margin: 0; }
-            .container { box-shadow: none; width: 100%; max-width: none; padding: 0; }
-            .no-print { display: none !important; }
-            input { border: none; font-weight: bold; background: transparent; }
+            body { 
+                background: white; 
+                margin: 0; 
+                padding: 0;
+            }
+            .container { 
+                box-shadow: none; 
+                width: 100%; 
+                max-width: none; 
+                padding: 0; 
+            }
+            .no-print { 
+                display: none !important; 
+            }
+            input { 
+                border: none; 
+                font-weight: bold; 
+                background: transparent; 
+                padding: 0;
+                font-size: 16px;
+                color: #000;
+            }
+            
+            /* Garantindo o Logo e o Header na impressão */
+            .header {
+                border-bottom: 2px solid #ccc;
+            }
+            .header img {
+                display: block !important;
+                max-height: 80px;
+            }
+            
+            /* Melhor contraste para a tabela na impressão */
+            th, td {
+                border: 1px solid #000;
+                color: #000;
+            }
+            th {
+                background-color: #e2e8f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Cards na impressão */
+            .card {
+                border: 1px solid #000;
+                background-color: transparent !important;
+            }
+            .card strong { color: #000 !important; }
         }
     </style>
 </head>
@@ -144,14 +194,14 @@
     <!-- Cabeçalho com Logo -->
     <div class="header">
         <h2>Controle de Abastecimento</h2>
-        <img src="logo.png" alt="L-PROSP Soluções que Prosperam" onerror="this.style.display='none'">
+        <img src="logo_2.jpg" alt="L-PROSP Soluções que Prosperam" onerror="this.style.display='none'">
     </div>
 
     <!-- Identificação do Veículo -->
     <div class="form-group">
-        <div class="input-field" style="max-width: 200px;">
-            <label for="placa">PLACA DA CARRETA:</label>
-            <input type="text" id="placa" placeholder="ABC-1234" style="text-transform: uppercase;">
+        <div class="input-field" style="max-width: 250px;">
+            <label for="placa">PLACA DA CARRETA / VEÍCULO:</label>
+            <input type="text" id="placa" placeholder="ABC-1234">
         </div>
     </div>
 
@@ -268,7 +318,7 @@
                 <td>${reg.horimetro.toFixed(1)}</td>
                 <td>${index === 0 ? '-' : horasTrabalhadas.toFixed(1) + ' h'}</td>
                 <td>${reg.litros.toFixed(1)} L</td>
-                <td>${index === 0 ? '<i>Primeiro registro</i>' : mediaTrecho.toFixed(2) + ' L/h'}</td>
+                <td>${index === 0 ? '<i>Ponto de Partida</i>' : mediaTrecho.toFixed(2) + ' L/h'}</td>
             `;
             tbody.appendChild(tr);
         });
