@@ -17,7 +17,7 @@
             color: #333;
         }
 
-        /* Modal/Tela de Login */
+        /* Tela de Login */
         .login-screen {
             display: flex;
             justify-content: center;
@@ -234,7 +234,7 @@
     </div>
 </div>
 
-<!-- PAINEL PRINCIPAL (Oculto até realizar o login) -->
+<!-- PAINEL PRINCIPAL -->
 <div id="main-app" class="container hidden">
     <div class="header">
         <h2>Controle de Abastecimento</h2>
@@ -306,7 +306,7 @@
     <button class="btn-print no-print" onclick="window.print()">Imprimir / Gerar PDF</button>
 </div>
 
-<!-- Firebase Modular SDK v10 -->
+<!-- Firebase JavaScript SDK (v10 Modulado) -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { 
@@ -326,23 +326,24 @@
         orderBy 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // 🔴 COLE SUAS CHAVES DO FIREBASE AQUI
+    // Suas credenciais do projeto gestaotk-32739
     const firebaseConfig = {
-        apiKey: "SUA_API_KEY",
-        authDomain: "SEU_PROJETO.firebaseapp.com",
-        projectId: "SEU_PROJETO",
-        storageBucket: "SEU_PROJETO.appspot.com",
-        messagingSenderId: "123456789",
-        appId: "1:123456789:web:abcdef"
+        apiKey: "AIzaSyD5JSqmME7s6QfuhJdzttVHtz-rljqpyaM",
+        authDomain: "gestaotk-32739.firebaseapp.com",
+        projectId: "gestaotk-32739",
+        storageBucket: "gestaotk-32739.firebasestorage.app",
+        messagingSenderId: "736361300312",
+        appId: "1:736361300312:web:8c9cd6fcc1ebc14dd7252d",
+        measurementId: "G-VV1X70QW8E"
     };
 
-    // Inicialização
+    // Inicialização do Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const abastecimentosRef = collection(db, "abastecimentos");
 
-    // Funções de Autenticação
+    // Login com conversão automática de 'lprosp' para 'lprosp@lprosp.com'
     window.fazerLogin = async function() {
         const usuarioInput = document.getElementById('login-usuario').value.trim();
         const senhaInput = document.getElementById('login-senha').value;
@@ -350,7 +351,6 @@
 
         errorMsg.style.display = 'none';
 
-        // Formata o usuário informado para e-mail se necessário
         let email = usuarioInput;
         if (!email.includes('@')) {
             email = `${email.toLowerCase()}@lprosp.com`;
@@ -368,7 +368,7 @@
         signOut(auth);
     };
 
-    // Monitora Estado de Login
+    // Monitora autenticação
     onAuthStateChanged(auth, (user) => {
         const loginScreen = document.getElementById('login-screen');
         const mainApp = document.getElementById('main-app');
@@ -383,7 +383,7 @@
         }
     });
 
-    // Funções do Firestore
+    // Operações do Banco de Dados
     window.adicionarRegistro = async function() {
         const dataInput = document.getElementById('data').value;
         const veiculo = document.getElementById('veiculo').value.trim().toUpperCase();
@@ -413,7 +413,7 @@
             limparFormulario();
         } catch (error) {
             console.error("Erro ao salvar:", error);
-            alert("Erro ao gravar dados.");
+            alert("Erro ao salvar os dados. Certifique-se de que o Firestore está ativado no seu console do Firebase.");
         }
     };
 
