@@ -299,14 +299,14 @@
             </tr>
         </thead>
         <tbody id="tabela-corpo">
-            <!-- Dados do Firebase -->
+            <!-- Dados do Realtime Database -->
         </tbody>
     </table>
 
     <button class="btn-print no-print" onclick="window.print()">Imprimir / Gerar PDF</button>
 </div>
 
-<!-- Firebase JavaScript SDK (v10 Modulado) -->
+<!-- SDKs do Firebase (Auth + Realtime Database) -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { 
@@ -316,20 +316,18 @@
         onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { 
-        getFirestore, 
-        collection, 
-        addDoc, 
-        deleteDoc, 
-        doc, 
-        onSnapshot, 
-        query, 
-        orderBy 
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        getDatabase, 
+        ref, 
+        push, 
+        remove, 
+        onValue 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    // Suas credenciais do projeto gestaotk-32739
+    // Configuração do seu projeto gestaotk-32739
     const firebaseConfig = {
         apiKey: "AIzaSyD5JSqmME7s6QfuhJdzttVHtz-rljqpyaM",
         authDomain: "gestaotk-32739.firebaseapp.com",
+        databaseURL: "https://gestaotk-32739-default-rtdb.firebaseio.com",
         projectId: "gestaotk-32739",
         storageBucket: "gestaotk-32739.firebasestorage.app",
         messagingSenderId: "736361300312",
@@ -337,13 +335,13 @@
         measurementId: "G-VV1X70QW8E"
     };
 
-    // Inicialização do Firebase
+    // Inicialização
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
-    const abastecimentosRef = collection(db, "abastecimentos");
+    const db = getDatabase(app);
+    const abastecimentosRef = ref(db, 'abastecimentos');
 
-    // Login com conversão automática de 'lprosp' para 'lprosp@lprosp.com'
+    // Autenticação
     window.fazerLogin = async function() {
         const usuarioInput = document.getElementById('login-usuario').value.trim();
         const senhaInput = document.getElementById('login-senha').value;
@@ -368,7 +366,7 @@
         signOut(auth);
     };
 
-    // Monitora autenticação
+    // Monitor de Sessão
     onAuthStateChanged(auth, (user) => {
         const loginScreen = document.getElementById('login-screen');
         const mainApp = document.getElementById('main-app');
@@ -383,7 +381,7 @@
         }
     });
 
-    // Operações do Banco de Dados
+    // Operações no Realtime Database
     window.adicionarRegistro = async function() {
         const dataInput = document.getElementById('data').value;
         const veiculo = document.getElementById('veiculo').value.trim().toUpperCase();
@@ -401,26 +399,26 @@
         const mediaKmL = km / litros;
 
         try {
-            await addDoc(abastecimentosRef, {
+            await push(abastecimentosRef, {
                 data: dataFormatada,
                 veiculo,
                 km,
                 litros,
                 valor,
                 mediaKmL,
-                criadoEm: new Date()
+                criadoEm: Date.now()
             });
             limparFormulario();
         } catch (error) {
             console.error("Erro ao salvar:", error);
-            alert("Erro ao salvar os dados. Certifique-se de que o Firestore está ativado no seu console do Firebase.");
+            alert("Erro ao gravar dados no Realtime Database.");
         }
     };
 
     window.removerRegistro = async function(id) {
         if (confirm("Tem certeza que deseja excluir este registro?")) {
             try {
-                await deleteDoc(doc(db, "abastecimentos", id));
+                await remove(ref(db, `abastecimentos/${id}`));
             } catch (error) {
                 console.error("Erro ao excluir:", error);
             }
@@ -428,12 +426,18 @@
     };
 
     function carregarDados() {
-        const q = query(abastecimentosRef, orderBy("criadoEm", "desc"));
-        onSnapshot(q, (snapshot) => {
+        onValue(abastecimentosRef, (snapshot) => {
             const registros = [];
-            snapshot.forEach((doc) => {
-                registros.push({ id: doc.id, ...doc.data() });
-            });
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    registros.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+                // Ordenar por data mais recente
+                registros.sort((a, b) => b.criadoEm - a.criadoEm);
+            }
             atualizarTabela(registros);
             atualizarCards(registros);
         });
