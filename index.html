@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Abastecimento - L-PROSP</title>
+    <title>Controle de Abastecimento Thermoking - L-PROSP</title>
     
     <!-- Favicon vinculado à imagem logo.jpg -->
     <link rel="icon" type="image/jpeg" href="logo.jpg">
@@ -238,34 +238,34 @@
 <!-- PAINEL PRINCIPAL -->
 <div id="main-app" class="container hidden">
     <div class="header">
-        <h2>Controle de Abastecimento</h2>
+        <h2>Controle de Abastecimento - Thermoking</h2>
         <div class="header-actions">
             <img src="logo.jpg" alt="L-PROSP Soluções que Prosperam">
             <button class="btn-logout no-print" onclick="fazerLogout()">Sair</button>
         </div>
     </div>
 
-    <!-- Formulário -->
+    <!-- Formulário adaptado para Carretas e Thermoking -->
     <div class="form-group no-print">
+        <div class="input-field">
+            <label for="carreta">Carreta / Placa</label>
+            <input type="text" id="carreta" placeholder="Ex: ABC-1234 / CRT-01">
+        </div>
         <div class="input-field">
             <label for="data">Data</label>
             <input type="date" id="data">
         </div>
         <div class="input-field">
-            <label for="veiculo">Veículo / Placa</label>
-            <input type="text" id="veiculo" placeholder="Ex: ABC-1234">
-        </div>
-        <div class="input-field">
-            <label for="km">KM Percorrido</label>
-            <input type="number" id="km" placeholder="Ex: 450" step="0.1">
+            <label for="horimetro">Horímetro (h)</label>
+            <input type="number" id="horimetro" placeholder="Ex: 150.5" step="0.1">
         </div>
         <div class="input-field">
             <label for="litros">Litros (L)</label>
-            <input type="number" id="litros" placeholder="Ex: 40" step="0.01">
+            <input type="number" id="litros" placeholder="Ex: 80" step="0.01">
         </div>
         <div class="input-field">
             <label for="valor">Valor Total (R$)</label>
-            <input type="number" id="valor" placeholder="Ex: 230.00" step="0.01">
+            <input type="number" id="valor" placeholder="Ex: 450.00" step="0.01">
         </div>
         <button class="btn-add" onclick="adicionarRegistro()">Adicionar</button>
     </div>
@@ -281,8 +281,8 @@
             <strong id="card-valor">R$ 0.00</strong>
         </div>
         <div class="card">
-            <span>MÉDIA GERAL (KM/L)</span>
-            <strong id="card-media">0.00 KM/L</strong>
+            <span>CONSUMO MÉDIO (L/h)</span>
+            <strong id="card-media">0.00 L/h</strong>
         </div>
     </div>
 
@@ -290,12 +290,12 @@
     <table>
         <thead>
             <tr>
+                <th>Carreta / Placa</th>
                 <th>Data</th>
-                <th>Veículo/Placa</th>
-                <th>KM</th>
+                <th>Horímetro (h)</th>
                 <th>Litros</th>
                 <th>Total (R$)</th>
-                <th>Média (KM/L)</th>
+                <th>Consumo (L/h)</th>
                 <th class="no-print">Ações</th>
             </tr>
         </thead>
@@ -324,7 +324,7 @@
         onValue 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    // Configuração do seu projeto gestaotk-32739
+    // Configuração do projeto gestaotk-32739
     const firebaseConfig = {
         apiKey: "AIzaSyD5JSqmME7s6QfuhJdzttVHtz-rljqpyaM",
         authDomain: "gestaotk-32739.firebaseapp.com",
@@ -340,7 +340,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
-    const abastecimentosRef = ref(db, 'abastecimentos');
+    const abastecimentosRef = ref(db, 'abastecimentos_thermoking');
 
     // Autenticação
     window.fazerLogin = async function() {
@@ -384,29 +384,31 @@
 
     // Operações no Realtime Database
     window.adicionarRegistro = async function() {
+        const carreta = document.getElementById('carreta').value.trim().toUpperCase();
         const dataInput = document.getElementById('data').value;
-        const veiculo = document.getElementById('veiculo').value.trim().toUpperCase();
-        const km = parseFloat(document.getElementById('km').value);
+        const horimetro = parseFloat(document.getElementById('horimetro').value);
         const litros = parseFloat(document.getElementById('litros').value);
         const valor = parseFloat(document.getElementById('valor').value);
 
-        if (!dataInput || !veiculo || isNaN(km) || isNaN(litros) || isNaN(valor) || litros <= 0) {
+        if (!carreta || !dataInput || isNaN(horimetro) || isNaN(litros) || isNaN(valor) || horimetro <= 0) {
             alert('Por favor, preencha todos os campos corretamente.');
             return;
         }
 
         const partesData = dataInput.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
-        const mediaKmL = km / litros;
+        
+        // Consumo em Litros por Hora (L/h)
+        const consumoLh = litros / horimetro;
 
         try {
             await push(abastecimentosRef, {
+                carreta,
                 data: dataFormatada,
-                veiculo,
-                km,
+                horimetro,
                 litros,
                 valor,
-                mediaKmL,
+                consumoLh,
                 criadoEm: Date.now()
             });
             limparFormulario();
@@ -419,7 +421,7 @@
     window.removerRegistro = async function(id) {
         if (confirm("Tem certeza que deseja excluir este registro?")) {
             try {
-                await remove(ref(db, `abastecimentos/${id}`));
+                await remove(ref(db, `abastecimentos_thermoking/${id}`));
             } catch (error) {
                 console.error("Erro ao excluir:", error);
             }
@@ -450,12 +452,12 @@
         registros.forEach(r => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
+                <td><strong>${r.carreta}</strong></td>
                 <td>${r.data}</td>
-                <td>${r.veiculo}</td>
-                <td>${r.km.toFixed(1)} km</td>
+                <td>${r.horimetro.toFixed(1)} h</td>
                 <td>${r.litros.toFixed(2)} L</td>
                 <td>R$ ${r.valor.toFixed(2)}</td>
-                <td><strong>${r.mediaKmL.toFixed(2)}</strong></td>
+                <td><strong>${(r.consumoLh || 0).toFixed(2)} L/h</strong></td>
                 <td class="no-print">
                     <button class="btn-delete" onclick="removerRegistro('${r.id}')">Excluir</button>
                 </td>
@@ -467,21 +469,22 @@
     function atualizarCards(registros) {
         const totalLitros = registros.reduce((acc, r) => acc + r.litros, 0);
         const totalValor = registros.reduce((acc, r) => acc + r.valor, 0);
-        const totalKm = registros.reduce((acc, r) => acc + r.km, 0);
+        const totalHoras = registros.reduce((acc, r) => acc + r.horimetro, 0);
 
-        const mediaGeral = totalLitros > 0 ? (totalKm / totalLitros) : 0;
+        const consumoMedioGeral = totalHoras > 0 ? (totalLitros / totalHoras) : 0;
 
         document.getElementById('card-litros').innerText = `${totalLitros.toFixed(2)} L`;
         document.getElementById('card-valor').innerText = `R$ ${totalValor.toFixed(2)}`;
-        document.getElementById('card-media').innerText = `${mediaGeral.toFixed(2)} KM/L`;
+        document.getElementById('card-media').innerText = `${consumoMedioGeral.toFixed(2)} L/h`;
     }
 
     function limparFormulario() {
+        // Mantém a Carreta/Placa preenchida para facilidade em lançamentos contínuos
         document.getElementById('data').value = '';
-        document.getElementById('veiculo').value = '';
-        document.getElementById('km').value = '';
+        document.getElementById('horimetro').value = '';
         document.getElementById('litros').value = '';
         document.getElementById('valor').value = '';
+        document.getElementById('data').focus();
     }
 </script>
 
