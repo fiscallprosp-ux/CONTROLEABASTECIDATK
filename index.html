@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Abastecimento - L-PROSP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Cabeçalho com Logo */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header img {
+            max-height: 70px;
+            width: auto;
+        }
+        .header h2 {
+            margin: 0;
+            color: #1a365d;
+            font-size: 22px;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 140px;
+        }
+        label {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #4a5568;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-add {
+            background-color: #2b6cb0;
+            color: white;
+            align-self: flex-end;
+        }
+        .btn-add:hover { background-color: #2c5282; }
+        .btn-print {
+            background-color: #38a169;
+            color: white;
+            margin-top: 15px;
+        }
+        .btn-print:hover { background-color: #2f855a; }
+        
+        /* Dashboard de Médias */
+        .cards {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            flex: 1;
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .card span {
+            display: block;
+            font-size: 12px;
+            color: #718096;
+        }
+        .card strong {
+            font-size: 20px;
+            color: #2d3748;
+        }
+
+        /* Tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+        th {
+            background-color: #f7fafc;
+            color: #4a5568;
+        }
+
+        /* Formatação para Impressão */
+        @media print {
+            body { background: white; margin: 0; }
+            .container { box-shadow: none; width: 100%; max-width: none; padding: 0; }
+            .no-print { display: none !important; }
+            input { border: none; font-weight: bold; background: transparent; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Cabeçalho com Logo -->
+    <div class="header">
+        <h2>Controle de Abastecimento</h2>
+        <!-- Certifique-se de salvar a imagem da logo como 'logo.png' no mesmo diretório -->
+        <img src="logo.png" alt="L-PROSP Soluções que Prosperam" onerror="this.style.display='none'">
+    </div>
+
+    <!-- Identificação do Veículo -->
+    <div class="form-group">
+        <div class="input-field" style="max-width: 200px;">
+            <label for="placa">PLACA DA CARRETA:</label>
+            <input type="text" id="placa" placeholder="ABC-1234" style="text-transform: uppercase;">
+        </div>
+    </div>
+
+    <!-- Formulário de Entrada (Com captura da tecla Enter) -->
+    <div class="form-group no-print">
+        <div class="input-field">
+            <label for="horimetro">HORÍMETRO ATUAL (h):</label>
+            <input type="number" id="horimetro" step="0.1" placeholder="Ex: 1250.5" onkeydown="verificarEnter(event)">
+        </div>
+        <div class="input-field">
+            <label for="litros">LITROS (L):</label>
+            <input type="number" id="litros" step="0.1" placeholder="Ex: 150" onkeydown="verificarEnter(event)">
+        </div>
+        <button class="btn-add" onclick="adicionarRegistro()">Adicionar</button>
+    </div>
+
+    <!-- Indicador de Média Geral -->
+    <div class="cards">
+        <div class="card">
+            <span>HORAS TOTAIS TRABALHADAS</span>
+            <strong id="totalHoras">0.0 h</strong>
+        </div>
+        <div class="card">
+            <span>TOTAL DE LITROS</span>
+            <strong id="totalLitros">0.0 L</strong>
+        </div>
+        <div class="card" style="background: #ebf8ff;">
+            <span>MÉDIA GERAL DO VEÍCULO</span>
+            <strong id="mediaGeral" style="color: #2b6cb0;">0.00 L/h</strong>
+        </div>
+    </div>
+
+    <!-- Tabela de Histórico -->
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Horímetro (h)</th>
+                <th>Horas Trab.</th>
+                <th>Litros (L)</th>
+                <th>Média Trecho (L/h)</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaCorpo">
+            <!-- Linhas geradas via JavaScript -->
+        </tbody>
+    </table>
+
+    <button class="btn-print no-print" onclick="window.print()">Imprimir / Gerar PDF</button>
+</div>
+
+<script>
+    let abastecidas = [];
+
+    // Função para acionar a adição ao apertar a tecla Enter
+    function verificarEnter(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            adicionarRegistro();
+        }
+    }
+
+    function adicionarRegistro() {
+        const horimetroInput = document.getElementById('horimetro');
+        const litrosInput = document.getElementById('litros');
+        
+        const horimetro = parseFloat(horimetroInput.value);
+        const litros = parseFloat(litrosInput.value);
+
+        if (isNaN(horimetro) || isNaN(litros) || horimetro <= 0 || litros <= 0) {
+            alert('Por favor, preencha o horímetro e os litros corretamente.');
+            return;
+        }
+
+        // Validação se o novo horímetro é maior que o anterior
+        if (abastecidas.length > 0) {
+            const ultimoHorimetro = abastecidas[abastecidas.length - 1].horimetro;
+            if (horimetro <= ultimoHorimetro) {
+                alert(`O horímetro atual deve ser maior que o anterior (${ultimoHorimetro} h).`);
+                return;
+            }
+        }
+
+        abastecidas.push({ horimetro, litros });
+        
+        // Limpa campos e volta o foco para o primeiro input
+        horimetroInput.value = '';
+        litrosInput.value = '';
+        horimetroInput.focus();
+
+        atualizarTabela();
+    }
+
+    function atualizarTabela() {
+        const tbody = document.getElementById('tabelaCorpo');
+        tbody.innerHTML = '';
+
+        let acumuladoHoras = 0;
+        let acumuladoLitros = 0;
+
+        abastecidas.forEach((reg, index) => {
+            let horasTrabalhadas = 0;
+            let mediaTrecho = 0;
+
+            if (index > 0) {
+                const horimetroAnterior = abastecidas[index - 1].horimetro;
+                horasTrabalhadas = reg.horimetro - horimetroAnterior;
+                mediaTrecho = reg.litros / horasTrabalhadas;
+                
+                acumuladoHoras += horasTrabalhadas;
+                acumuladoLitros += reg.litros;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}º</td>
+                <td>${reg.horimetro.toFixed(1)}</td>
+                <td>${index === 0 ? '-' : horasTrabalhadas.toFixed(1) + ' h'}</td>
+                <td>${reg.litros.toFixed(1)} L</td>
+                <td>${index === 0 ? '<i>Primeiro registro</i>' : mediaTrecho.toFixed(2) + ' L/h'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Atualizar Totais e Média Geral
+        document.getElementById('totalHoras').innerText = acumuladoHoras.toFixed(1) + ' h';
+        document.getElementById('totalLitros').innerText = acumuladoLitros.toFixed(1) + ' L';
+        
+        if (acumuladoHoras > 0) {
+            const mediaGeral = acumuladoLitros / acumuladoHoras;
+            document.getElementById('mediaGeral').innerText = mediaGeral.toFixed(2) + ' L/h';
+        } else {
+            document.getElementById('mediaGeral').innerText = '0.00 L/h';
+        }
+    }
+</script>
+
+</body>
+</html>
