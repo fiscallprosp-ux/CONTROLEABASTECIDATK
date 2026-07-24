@@ -220,7 +220,7 @@
 
 <!-- TELA DE LOGIN -->
 <div id="login-screen" class="login-screen">
-    <div class="login-card">
+    <form class="login-card" onsubmit="event.preventDefault(); fazerLogin();">
         <h3>Acesso ao Sistema</h3>
         <div class="input-field">
             <label for="login-usuario">Usuário</label>
@@ -230,9 +230,9 @@
             <label for="login-senha">Senha</label>
             <input type="password" id="login-senha" placeholder="Digite sua senha">
         </div>
-        <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+        <button type="submit" class="btn-login">Entrar</button>
         <p id="error-msg" class="error-msg">Usuário ou senha incorretos.</p>
-    </div>
+    </form>
 </div>
 
 <!-- PAINEL PRINCIPAL -->
@@ -241,12 +241,12 @@
         <h2>Controle de Abastecimento - Thermoking</h2>
         <div class="header-actions">
             <img src="logo.jpg" alt="L-PROSP Soluções que Prosperam">
-            <button class="btn-logout no-print" onclick="fazerLogout()">Sair</button>
+            <button class="btn-logout no-print" onclick="fazerLogout()" type="button">Sair</button>
         </div>
     </div>
 
-    <!-- Formulário adaptado para Carretas e Thermoking -->
-    <div class="form-group no-print">
+    <!-- Formulário com Enter habilitado -->
+    <form class="form-group no-print" onsubmit="event.preventDefault(); adicionarRegistro();">
         <div class="input-field">
             <label for="carreta">Carreta / Placa</label>
             <input type="text" id="carreta" placeholder="Ex: ABC-1234 / CRT-01">
@@ -267,8 +267,8 @@
             <label for="valor">Valor Total (R$)</label>
             <input type="number" id="valor" placeholder="Ex: 450.00" step="0.01">
         </div>
-        <button class="btn-add" onclick="adicionarRegistro()">Adicionar</button>
-    </div>
+        <button type="submit" class="btn-add">Adicionar</button>
+    </form>
 
     <!-- Cards de Totais -->
     <div class="cards">
@@ -300,14 +300,14 @@
             </tr>
         </thead>
         <tbody id="tabela-corpo">
-            <!-- Dados do Realtime Database -->
+            <!-- Registros temporários da sessão -->
         </tbody>
     </table>
 
-    <button class="btn-print no-print" onclick="window.print()">Imprimir / Gerar PDF</button>
+    <button class="btn-print no-print" onclick="window.print()" type="button">Imprimir / Gerar PDF</button>
 </div>
 
-<!-- SDKs do Firebase (Auth + Realtime Database) -->
+<!-- SDKs do Firebase (Apenas Autenticação) -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { 
@@ -316,15 +316,7 @@
         signOut, 
         onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { 
-        getDatabase, 
-        ref, 
-        push, 
-        remove, 
-        onValue 
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    // Configuração do projeto gestaotk-32739
     const firebaseConfig = {
         apiKey: "AIzaSyD5JSqmME7s6QfuhJdzttVHtz-rljqpyaM",
         authDomain: "gestaotk-32739.firebaseapp.com",
@@ -336,13 +328,12 @@
         measurementId: "G-VV1X70QW8E"
     };
 
-    // Inicialização
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getDatabase(app);
-    const abastecimentosRef = ref(db, 'abastecimentos_thermoking');
 
-    // Autenticação
+    // Array Local para Sessão Temporária (Limpa com F5)
+    let registrosSessao = [];
+
     window.fazerLogin = async function() {
         const usuarioInput = document.getElementById('login-usuario').value.trim();
         const senhaInput = document.getElementById('login-senha').value;
@@ -367,7 +358,6 @@
         signOut(auth);
     };
 
-    // Monitor de Sessão
     onAuthStateChanged(auth, (user) => {
         const loginScreen = document.getElementById('login-screen');
         const mainApp = document.getElementById('main-app');
@@ -375,15 +365,13 @@
         if (user) {
             loginScreen.classList.add('hidden');
             mainApp.classList.remove('hidden');
-            carregarDados();
         } else {
             loginScreen.classList.remove('hidden');
             mainApp.classList.add('hidden');
         }
     });
 
-    // Operações no Realtime Database
-    window.adicionarRegistro = async function() {
+    window.adicionarRegistro = function() {
         const carreta = document.getElementById('carreta').value.trim().toUpperCase();
         const dataInput = document.getElementById('data').value;
         const horimetro = parseFloat(document.getElementById('horimetro').value);
@@ -397,59 +385,65 @@
 
         const partesData = dataInput.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
-        
-        // Consumo em Litros por Hora (L/h)
-        const consumoLh = litros / horimetro;
 
-        try {
-            await push(abastecimentosRef, {
-                carreta,
-                data: dataFormatada,
-                horimetro,
-                litros,
-                valor,
-                consumoLh,
-                criadoEm: Date.now()
-            });
-            limparFormulario();
-        } catch (error) {
-            console.error("Erro ao salvar:", error);
-            alert("Erro ao gravar dados no Realtime Database.");
-        }
-    };
-
-    window.removerRegistro = async function(id) {
-        if (confirm("Tem certeza que deseja excluir este registro?")) {
-            try {
-                await remove(ref(db, `abastecimentos_thermoking/${id}`));
-            } catch (error) {
-                console.error("Erro ao excluir:", error);
-            }
-        }
-    };
-
-    function carregarDados() {
-        onValue(abastecimentosRef, (snapshot) => {
-            const registros = [];
-            if (snapshot.exists()) {
-                snapshot.forEach((childSnapshot) => {
-                    registros.push({
-                        id: childSnapshot.key,
-                        ...childSnapshot.val()
-                    });
-                });
-                registros.sort((a, b) => b.criadoEm - a.criadoEm);
-            }
-            atualizarTabela(registros);
-            atualizarCards(registros);
+        registrosSessao.push({
+            carreta,
+            data: dataFormatada,
+            horimetro,
+            litros,
+            valor
         });
-    }
 
-    function atualizarTabela(registros) {
+        recalcularEMostrar();
+        limparFormulario();
+    };
+
+    window.removerRegistro = function(index) {
+        registrosSessao.splice(index, 1);
+        recalcularEMostrar();
+    };
+
+    function recalcularEMostrar() {
+        let totalLitros = 0;
+        let totalValor = 0;
+        let totalHoras = 0;
+        let litrosParaMedia = 0;
+
+        // Processa cálculo de consumo
+        for (let i = 0; i < registrosSessao.length; i++) {
+            totalLitros += registrosSessao[i].litros;
+            totalValor += registrosSessao[i].valor;
+
+            if (i === 0) {
+                // O primeiro abastecimento da sessão serve como ponto de partida do horímetro
+                registrosSessao[i].consumoLh = null;
+            } else {
+                let diffHoras = registrosSessao[i].horimetro - registrosSessao[i - 1].horimetro;
+                if (diffHoras > 0) {
+                    registrosSessao[i].consumoLh = registrosSessao[i].litros / diffHoras;
+                    totalHoras += diffHoras;
+                    litrosParaMedia += registrosSessao[i].litros;
+                } else {
+                    registrosSessao[i].consumoLh = 0;
+                }
+            }
+        }
+
+        // Atualiza Cards
+        const mediaGeral = totalHoras > 0 ? (litrosParaMedia / totalHoras) : 0;
+        document.getElementById('card-litros').innerText = `${totalLitros.toFixed(2)} L`;
+        document.getElementById('card-valor').innerText = `R$ ${totalValor.toFixed(2)}`;
+        document.getElementById('card-media').innerText = `${mediaGeral.toFixed(2)} L/h`;
+
+        // Renderiza Tabela na ordem exata de inserção
         const tbody = document.getElementById('tabela-corpo');
         tbody.innerHTML = '';
 
-        registros.forEach(r => {
+        registrosSessao.forEach((r, index) => {
+            const mediaTxt = r.consumoLh !== null 
+                ? `<strong>${r.consumoLh.toFixed(2)} L/h</strong>` 
+                : `<span style="color:#888; font-style:italic;">Inicial</span>`;
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${r.carreta}</strong></td>
@@ -457,29 +451,16 @@
                 <td>${r.horimetro.toFixed(1)} h</td>
                 <td>${r.litros.toFixed(2)} L</td>
                 <td>R$ ${r.valor.toFixed(2)}</td>
-                <td><strong>${(r.consumoLh || 0).toFixed(2)} L/h</strong></td>
+                <td>${mediaTxt}</td>
                 <td class="no-print">
-                    <button class="btn-delete" onclick="removerRegistro('${r.id}')">Excluir</button>
+                    <button class="btn-delete" type="button" onclick="removerRegistro(${index})">Excluir</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    function atualizarCards(registros) {
-        const totalLitros = registros.reduce((acc, r) => acc + r.litros, 0);
-        const totalValor = registros.reduce((acc, r) => acc + r.valor, 0);
-        const totalHoras = registros.reduce((acc, r) => acc + r.horimetro, 0);
-
-        const consumoMedioGeral = totalHoras > 0 ? (totalLitros / totalHoras) : 0;
-
-        document.getElementById('card-litros').innerText = `${totalLitros.toFixed(2)} L`;
-        document.getElementById('card-valor').innerText = `R$ ${totalValor.toFixed(2)}`;
-        document.getElementById('card-media').innerText = `${consumoMedioGeral.toFixed(2)} L/h`;
-    }
-
     function limparFormulario() {
-        // Mantém a Carreta/Placa preenchida para facilidade em lançamentos contínuos
         document.getElementById('data').value = '';
         document.getElementById('horimetro').value = '';
         document.getElementById('litros').value = '';
